@@ -27,6 +27,7 @@ const CURRENCY_SYMBOLS = {
 };
 
 app.get('/', async (req, res) => {
+  console.log('testing', process.env.STRIPE_KEY)
   const products = await stripe.products.list({
     limit: 3,
   });
