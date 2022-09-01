@@ -45,10 +45,14 @@ app.get('/', async (req, res) => {
 
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
-    res.render('checkout', {
+    res.json({
       prices: prices.data || [],
       CURRENCY_SYMBOLS: CURRENCY_SYMBOLS
-    });
+    })
+    // res.render('checkout', {
+    //   prices: prices.data || [],
+    //   CURRENCY_SYMBOLS: CURRENCY_SYMBOLS
+    // });
   } catch(e){
     res.json({
       e: e
