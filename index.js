@@ -8,7 +8,6 @@ app.use('/static', express.static('static'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-const YOUR_DOMAIN = 'http://localhost:4242';
 const CURRENCY_SYMBOLS = {
   'USD': '$', // US Dollar
   'EUR': '€', // Euro
@@ -86,8 +85,8 @@ app.post('/create-checkout-session/:price_id', async (req, res) => {
       quantity: 1,
     }, ],
     mode: 'subscription',
-    success_url: `${YOUR_DOMAIN}/success`,
-    cancel_url: `${YOUR_DOMAIN}/cancel`,
+    success_url: `${req.headers.host}/success`,
+    cancel_url: `${req.headers.host}/cancel`,
   });
 
   res.redirect(303, session.url);
