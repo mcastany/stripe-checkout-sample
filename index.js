@@ -3,10 +3,17 @@ const stripe = require('stripe')(process.env.STRIPE_KEY);
 const express = require('express');
 const path = require('path');
 const app = express();
+const axios = require('axios').default;
 app.use('/static', express.static('static'));
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+const instance = axios.create({
+  baseURL: 'https://api.revenuecat.com/v1/',
+  timeout: 5000,
+  headers: {'X-Platform': 'stripe','Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.RC_STRIPE_KEY}`}
+});
 
 const CURRENCY_SYMBOLS = {
   'USD': '$', // US Dollar
@@ -31,40 +38,54 @@ app.get('/test', async (req, res) => {
 })
 
 app.get('/', async (req, res) => {
-  try{
-    const products = await stripe.products.list({
-      limit: 3,
-    });
+  const products = await stripe.products.list({
+    limit: 3,
+  });
 
-    const prices = await stripe.prices.list({
-      limit: 3,
-    });
+  const prices = await stripe.prices.list({
+    limit: 3,
+  });
 
-    prices.data.forEach((p) => {
-      p.product = products.data.filter(prod => prod.id === p.product)[0];
-    });
+  prices.data.forEach((p) => {
+    p.product = products.data.filter(prod => prod.id === p.product)[0];
+  });
 
-    res.setHeader('Content-Type', 'text/html');
-    res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
-    // res.json({
-    //   prices: prices.data || [],
-    //   CURRENCY_SYMBOLS: CURRENCY_SYMBOLS
-    // })
-    res.render('checkout', {
-      prices: prices.data || [],
-      CURRENCY_SYMBOLS: CURRENCY_SYMBOLS
-    });
-  } catch(e){
-    res.json({
-      e: e
-    })
-  }
+  res.setHeader('Content-Type', 'text/html');
+  res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
+  res.render('checkout', {
+    prices: prices.data || [],
+    CURRENCY_SYMBOLS: CURRENCY_SYMBOLS
+  });
 })
 
 app.get('/success', async (req, res) => {
+  if (!req.query.session_id){
+    // We should fail, but for now it's ok
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
+    res.render('success'); 
+    return;
+  }
+
+  const session = await stripe.checkout.sessions.retrieve(req.query.session_id, {
+    expand: ['invoice.subscription'],
+  });
+  let response;
+
+  try{
+
+    response = await instance.post('/receipts', {
+      fetch_token: session.subscription,
+      app_user_id: session.customer
+    })
+  } catch(e){
+    res.json({ e: e})
+    return;
+  }
+
   res.setHeader('Content-Type', 'text/html');
   res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
-  res.render('success');
+  res.render('success', { subscriber: response.data.subscriber });
 })
 
 app.get('/cancel', async (req, res) => {
@@ -85,8 +106,8 @@ app.post('/create-checkout-session/:price_id', async (req, res) => {
       quantity: 1,
     }, ],
     mode: 'subscription',
-    success_url: `${req.headers.host}/success`,
-    cancel_url: `${req.headers.host}/cancel`,
+    success_url: `http://${req.headers.host}/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `http://${req.headers.host}/cancel`,
   });
 
   res.redirect(303, session.url);
