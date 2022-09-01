@@ -30,25 +30,30 @@ app.get('/test', async (req, res) => {
 })
 
 app.get('/', async (req, res) => {
-  console.log('testing', process.env.STRIPE_KEY)
-  const products = await stripe.products.list({
-    limit: 3,
-  });
+  try{
+    const products = await stripe.products.list({
+      limit: 3,
+    });
 
-  const prices = await stripe.prices.list({
-    limit: 3,
-  });
+    const prices = await stripe.prices.list({
+      limit: 3,
+    });
 
-  prices.data.forEach((p) => {
-    p.product = products.data.filter(prod => prod.id === p.product)[0];
-  });
+    prices.data.forEach((p) => {
+      p.product = products.data.filter(prod => prod.id === p.product)[0];
+    });
 
-  res.setHeader('Content-Type', 'text/html');
-  res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
-  res.render('checkout', {
-    prices: prices.data || [],
-    CURRENCY_SYMBOLS: CURRENCY_SYMBOLS
-  });
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
+    res.render('checkout', {
+      prices: prices.data || [],
+      CURRENCY_SYMBOLS: CURRENCY_SYMBOLS
+    });
+  } catch(e){
+    res.json({
+      e: e
+    })
+  }
 })
 
 app.get('/success', async (req, res) => {
