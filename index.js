@@ -1,3 +1,4 @@
+require('dotenv').config()
 const stripe = require('stripe')(process.env.STRIPE_KEY);
 const express = require('express');
 const app = express();
@@ -23,6 +24,10 @@ const CURRENCY_SYMBOLS = {
   'UAH': '₴', // Ukrainian Hryvnia
   'VND': '₫', // Vietnamese Dong
 };
+
+app.get('/test', async (req, res) => {
+  res.json({ it: 'works'})
+})
 
 app.get('/', async (req, res) => {
   console.log('testing', process.env.STRIPE_KEY)
