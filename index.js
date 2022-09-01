@@ -1,10 +1,12 @@
 require('dotenv').config()
 const stripe = require('stripe')(process.env.STRIPE_KEY);
 const express = require('express');
+const path = require('path');
 const app = express();
 app.use(express.static('public'));
 
 app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 const YOUR_DOMAIN = 'http://localhost:4242';
 const CURRENCY_SYMBOLS = {
@@ -45,14 +47,14 @@ app.get('/', async (req, res) => {
 
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
-    res.json({
-      prices: prices.data || [],
-      CURRENCY_SYMBOLS: CURRENCY_SYMBOLS
-    })
-    // res.render('checkout', {
+    // res.json({
     //   prices: prices.data || [],
     //   CURRENCY_SYMBOLS: CURRENCY_SYMBOLS
-    // });
+    // })
+    res.render('checkout', {
+      prices: prices.data || [],
+      CURRENCY_SYMBOLS: CURRENCY_SYMBOLS
+    });
   } catch(e){
     res.json({
       e: e
