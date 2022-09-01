@@ -79,4 +79,4 @@ app.post('/create-checkout-session/:price_id', async (req, res) => {
   res.redirect(303, session.url);
 });
 
-app.listen(process.env.PORT || 8080, () => console.log('Running on port 4242'));
+app.listen(process.env.PORT || 8080, () => console.log('Running on port 8080'));
