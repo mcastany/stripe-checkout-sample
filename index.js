@@ -39,7 +39,6 @@ app.get('/', async (req, res) => {
     p.product = products.data.filter(prod => prod.id === p.product)[0];
   });
 
-
   res.setHeader('Content-Type', 'text/html');
   res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
   res.render('checkout', {
