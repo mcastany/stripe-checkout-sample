@@ -73,11 +73,21 @@ app.get('/success', async (req, res) => {
   let response;
 
   try{
-
-    response = await instance.post('/receipts', {
+    const body = {
       fetch_token: session.subscription,
-      app_user_id: session.customer
-    })
+      app_user_id: session.customer,
+      attributes: {
+        '$displayName': {
+          value: session.customer_details.name
+        },
+        '$email': {
+          value: session.customer_details.email
+        },
+      }
+    };
+
+    console.log(body)
+    response = await instance.post('/receipts', body)
   } catch(e){
     res.json({ e: e})
     return;
