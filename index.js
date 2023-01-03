@@ -12,7 +12,12 @@ app.set('views', path.join(__dirname, 'views'));
 const instance = axios.create({
   baseURL: 'https://api.revenuecat.com/v1/',
   timeout: 5000,
-  headers: {'X-Platform': 'stripe','Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.RC_STRIPE_KEY}`}
+  headers: {
+    'X-Platform': 'stripe',
+    'X-Platform-Account': 'straccb885da6c52',
+    'Accept': 'application/json', 
+    'Content-Type': 'application/json', 
+    'Authorization': `Bearer ${process.env.RC_STRIPE_KEY}`}
 });
 
 const CURRENCY_SYMBOLS = {
@@ -86,7 +91,6 @@ app.get('/success', async (req, res) => {
       }
     };
 
-    console.log(body)
     response = await instance.post('/receipts', body)
   } catch(e){
     res.json({ e: e})
