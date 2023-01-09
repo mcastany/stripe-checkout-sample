@@ -8,16 +8,19 @@
   </head>
   <body>
     <section>
+      <h2>User: <%= user.id %></h2>
       <h2>List of Products</h2>
       <% prices.forEach((price) => { %>
         <div class="product">
           <img src="https://i.imgur.com/EHyR2nP.png" alt="The cover of Stubborn Attachments" />
           <div class="description">
             <h3><%= price.product.name %></h3>
-            <h5><%= CURRENCY_SYMBOLS[price.currency.toUpperCase()]%><%= price.unit_amount/100 %> per <%= price.recurring && price.recurring.interval %></h5>
+            <h5><%= CURRENCY_SYMBOLS[price.currency.toUpperCase()]%><%= price.unit_amount/100 %> per  <%= price.recurring && price.recurring.interval_count > 1 ? "(" + price.recurring.interval_count  + ")" : "" %>  <%= price.recurring && price.recurring.interval %></h5>
           </div>
         </div>
-        <form action="/create-checkout-session/<%= price.id %>" method="POST">
+        <form action="/create-checkout-session" method="POST">
+          <!-- /<%= price.id %> -->
+          <input type="hidden" value="<%= price.id %>" name="price_id"/>
           <button type="submit" id="checkout-button">Buy</button>
         </form>
       <% }); %>

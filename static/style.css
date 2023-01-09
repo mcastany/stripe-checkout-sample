@@ -10,6 +10,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+section{
+  width: 300px;
+}
+
+section select {
+  width: 100%;
+}
+
 section.white-center {
   background: #ffffff;
   display: flex;

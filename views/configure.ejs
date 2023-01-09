@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Configuration</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+  </head>
+  <body>
+    <section>
+      <form action="/configure" method="POST" id="form">
+        <h2>Current User</h2>
+        <select name="user_picker">
+          <% users.forEach((user) => { %>
+            <option value="<%= user.id %>"><%= user.email %> (<%= user.id %>)</option>
+          <% }); %>
+        </select>
+
+        <h2>
+          <% if (use_offerings === true){ %>
+            <input type="checkbox" name="use_offerings" checked>
+          <% } else { %>
+            <input type="checkbox" name="use_offerings">
+          <% } %>
+          User Offerings
+        </h2>
+
+        <button type="submit" >Submit</button>
+      </form>
+    </section>
+  </body>
+</html>
