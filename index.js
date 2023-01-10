@@ -122,10 +122,18 @@ app.get('/', async (req, res) => {
   res.setHeader('Content-Type', 'text/html');
   res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
   res.render('checkout', {
-    prices,
+    prices: prices.sort((a,b) => { return a.product.id > b.product.id ? 1 : -1}),
     rc_user: req.session.rc_user,
     subscriptions,
     CURRENCY_SYMBOLS: CURRENCY_SYMBOLS
+  });
+})
+
+
+app.get('/user', async (req, res) => {
+  const response = await instance.get(`/subscribers/${req.session.rc_user.id}`);
+  res.render('user', {
+    user: response.data.subscriber
   });
 })
 
@@ -149,9 +157,14 @@ app.get('/configure', async (req, res) => {
 
 app.post('/configure', async (req, res) => {
   req.session.use_offerings = req.body.use_offerings === 'on';
-  req.session.rc_user = {
-    id:  req.body.rc_id,
-    email: req.body.rc_email
+
+  if (req.body.rc_id){
+    req.session.rc_user = {
+      id:  req.body.rc_id,
+      email: req.body.rc_email
+    }
+  } else {
+    req.session.rc_user = generateAnonUser();
   }
 
   req.session.use_stripe_user = req.body.use_stripe_customer === 'on';

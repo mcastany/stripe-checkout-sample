@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <%- include('./partials/header'); %>
+  </head>
+  <body>
+    <div class="py-3 text-center">
+      <h1 class="display-5 fw-bold">Customer Info</h1>
+      <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4"><a href="/">home</a></p>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row justify-content-md-center py-3">
+        <div class="col-8 align-self-center">
+          <div class="mb-8">
+            <!-- <label for="customer_info" class="form-label">Customer Info</label> -->
+            <textarea class="form-control" id="customer_info" rows="<%- JSON.stringify(user, undefined, 4).split('\n').length + 1%>" disabled><%- JSON.stringify(user, undefined, 4)%></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+  <%- include('./partials/scripts'); %>
+</html>
