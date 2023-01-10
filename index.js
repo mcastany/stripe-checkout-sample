@@ -60,7 +60,8 @@ app.get('/', async (req, res) => {
   if (!req.session.user){
     req.session.user = {
       anonymous: true,
-      id: `$RCAnonymousID:${uuid()}`
+      id: `$RCAnonymousID:${uuid()}`,
+      email: 'Anonymous'
     };
   }
 
@@ -123,6 +124,7 @@ app.get('/', async (req, res) => {
 
   res.setHeader('Content-Type', 'text/html');
   res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
+
   res.render('checkout', {
     prices: filteredPrices,
     user: req.session.user,
@@ -143,6 +145,7 @@ app.get('/configure', async (req, res) => {
 
   res.render('configure', {
     users: users.data,
+    selected_user: req.session.user.id,
     use_offerings: req.session.use_offerings
   });
 })
@@ -150,10 +153,24 @@ app.get('/configure', async (req, res) => {
 app.post('/configure', async (req, res) => {
   req.session.use_offerings = req.body.use_offerings === 'on';
 
-  req.session.user = {
-    id:req.body.user_picker,
-    anonymous: !!req.body.user_picker.startsWith('cus_'),
+  let user;
+
+  if (req.body.user_picker.startsWith('cus_')){
+    const sUser = await stripe.customers.retrieve(req.body.user_picker);
+    user = {
+      anonymous: false,
+      id: req.body.user_picker,
+      email: sUser.email
+    }
+  } else {
+    user = {
+      id:req.body.user_picker,
+      anonymous: !req.body.user_picker.startsWith('cus_'),
+      email: 'Anonymous'
+    }
   }
+
+  req.session.user = user;
 
   // Store config in session
   res.setHeader('Content-Type', 'text/html');
@@ -218,7 +235,7 @@ app.post('/create-checkout-session', async (req, res) => {
     }, ],
     mode: 'subscription',
     success_url: `http://${req.headers.host}/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `http://${req.headers.host}/cancel`,
+    cancel_url: `http://${req.headers.host}/`,
   };
 
   if (req.session.user && !req.session.user.anonymous){

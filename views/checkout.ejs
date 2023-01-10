@@ -1,29 +1,42 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Buy cool new product</title>
-    <link rel="stylesheet" href="/static/style.css">
-    <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
-    <script src="https://js.stripe.com/v3/"></script>
+    <%- include('./partials/header'); %>
   </head>
   <body>
-    <section>
-      <h2>User: <%= user.id %></h2>
-      <h2>List of Products</h2>
-      <% prices.forEach((price) => { %>
-        <div class="product">
-          <img src="https://i.imgur.com/EHyR2nP.png" alt="The cover of Stubborn Attachments" />
-          <div class="description">
-            <h3><%= price.product.name %></h3>
-            <h5><%= CURRENCY_SYMBOLS[price.currency.toUpperCase()]%><%= price.unit_amount/100 %> per  <%= price.recurring && price.recurring.interval_count > 1 ? "(" + price.recurring.interval_count  + ")" : "" %>  <%= price.recurring && price.recurring.interval %></h5>
-          </div>
+    <div class="container">
+      <div class="py-3 text-center">
+        <h1 class="display-5 fw-bold">Subscribe</h1>
+        <div class="col-lg-6 mx-auto">
+          <p class="lead mb-4">Hello <i><%= user.email %></i>, choose the plan you want to subscribe to? If you want to change your account <a href="/configure">click here</a></p>
         </div>
-        <form action="/create-checkout-session" method="POST">
-          <!-- /<%= price.id %> -->
-          <input type="hidden" value="<%= price.id %>" name="price_id"/>
-          <button type="submit" id="checkout-button">Buy</button>
-        </form>
-      <% }); %>
-    </section>
+      </div>
+      <div class="container">
+        <div class="row justify-content-md-center py-3">
+          <% prices.forEach((price, index) => { %>
+
+            <% if ((index > 0) && (index % 3 === 0)){ %>
+              </div>
+              <div class="row justify-content-md-center">
+            <% } %>
+            <div class="col-sm-4">
+              <div class="card" style="width: 18rem;">
+                <img class="card-img-top" src="https://i.imgur.com/EHyR2nP.png" alt="The cover of Stubborn Attachments" />
+                <div class="card-body">
+                  <h5 class="card-title"><%= price.product.name %></h5>
+                  <p class="card-text"><%= CURRENCY_SYMBOLS[price.currency.toUpperCase()]%><%= price.unit_amount/100 %> per  <%= price.recurring && price.recurring.interval_count > 1 ? "(" + price.recurring.interval_count  + ")" : "" %>  <%= price.recurring && price.recurring.interval %></p>
+                  <form action="/create-checkout-session" method="POST">
+                    <!-- /<%= price.id %> -->
+                    <input type="hidden" value="<%= price.id %>" name="price_id"/>
+                    <button class="btn btn-primary" type="submit" id="checkout-button">Buy</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
   </body>
+  <%- include('./partials/scripts'); %>
 </html>
