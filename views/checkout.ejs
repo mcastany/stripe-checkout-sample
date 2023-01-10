@@ -8,7 +8,7 @@
       <div class="py-3 text-center">
         <h1 class="display-5 fw-bold">Subscribe</h1>
         <div class="col-lg-6 mx-auto">
-          <p class="lead mb-4">Hello <i><%= user.email %></i>, choose the plan you want to subscribe to? If you want to change your account <a href="/configure">click here</a></p>
+          <p class="lead mb-4">Hello <i><%= rc_user.email %></i>, choose the plan you want to subscribe to? If you want to change your account <a href="/configure">click here</a></p>
         </div>
       </div>
       <div class="container">
@@ -28,7 +28,11 @@
                   <form action="/create-checkout-session" method="POST">
                     <!-- /<%= price.id %> -->
                     <input type="hidden" value="<%= price.id %>" name="price_id"/>
-                    <button class="btn btn-primary" type="submit" id="checkout-button">Buy</button>
+                    <% if (subscriptions.indexOf(price.product.id) === -1){ %>
+                      <button class="btn btn-primary" type="submit" id="checkout-button">Buy</button>
+                    <% } else { %>
+                      <button class="btn btn-disabled" disabled id="checkout-button">Purchased</button>
+                    <% } %>
                   </form>
                 </div>
               </div>

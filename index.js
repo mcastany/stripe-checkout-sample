@@ -56,31 +56,55 @@ const CURRENCY_SYMBOLS = {
   'VND': '₫', // Vietnamese Dong
 };
 
+function generateAnonUser(){
+  return  {
+    anonymous: true,
+    id: `$RCAnonymousID:${uuid()}`,
+    email: 'anonymous@revenuecat.com'
+  };
+}
+
+// MAP RC identifiers to Stripe intervals
+function getRCPackage(pri){
+  const timeMapping = {
+    month: 'monthly',
+    year: 'annual',
+    week: 'weekly',
+  };
+
+  if (pri.type === 'recurring'){
+    if (pri.recurring.interval_count === 1){
+    }
+    
+    let prefix = '';
+    if (pri.recurring.interval_count === 3 && pri.recurring.interval === 'month') {
+      return 'three_month';
+    }
+
+    if (pri.recurring.interval_count === 6  && pri.recurring.interval === 'month') {
+      return 'six_month';
+    }
+
+    return `${prefix}${timeMapping[pri.recurring.interval]}`;
+  } else {
+    return 'lifetime'
+  }
+}
+
 app.get('/', async (req, res) => {
-  if (!req.session.user){
-    req.session.user = {
-      anonymous: true,
-      id: `$RCAnonymousID:${uuid()}`,
-      email: 'Anonymous'
-    };
+  if (!req.session.rc_user){
+    req.session.rc_user = generateAnonUser();
   }
 
-  const [products, prices] = await Promise.all([
-    stripe.products.list({
-      limit: 10,
-    }),
-    stripe.prices.list({
-      limit: 10,
-    })
-  ]);
-
-  let filteredPrices = prices.data;
-  filteredPrices.forEach((p) => {
-    p.product = products.data.filter(prod => prod.id === p.product)[0];
+  const response = await instance.get(`/subscribers/${req.session.rc_user.id}`);
+  const subscriptions = Object.keys(response.data.subscriber.subscriptions);
+  let { data: prices} = await stripe.prices.list({
+    limit: 10,
+    expand: ['data.product']
   });
 
   if (req.session.use_offerings){
-    const offerings = await instance.get(`/subscribers/${req.session.user.id}/offerings`)
+    const offerings = await instance.get(`/subscribers/${req.session.rc_user.id}/offerings`)
 
     const offer = offerings.data.offerings.filter(x => x.identifier === offerings.data.current_offering_id)[0];
 
@@ -91,43 +115,16 @@ app.get('/', async (req, res) => {
     // We'll create a list of identifiers 
     const productIdentifiers = offer.packages.map(p => `${p.identifier.replace('$rc_','')}/${p.platform_product_identifier}`);
 
-    // MAP RC identifiers to Stripe intervals
-    function getRCPackage(pri){
-      const timeMapping = {
-        month: 'monthly',
-        year: 'annual',
-        weekly: 'weekly',
-      };
-
-      if (pri.type === 'recurring'){
-        if (pri.recurring.interval_count === 1){
-        }
-        
-        let prefix = '';
-        if (pri.recurring.interval_count === 3 && pri.recurring.interval === 'month') {
-          return 'three_month';
-        }
-
-        if (pri.recurring.interval_count === 6  && pri.recurring.interval === 'month') {
-          return 'six_month';
-        }
-
-        return `${prefix}${timeMapping[pri.recurring.interval]}`;
-      } else {
-        return 'lifetime'
-      }
-    }
-
     // Filter prices that match duration and product
-    filteredPrices = prices.data.filter(pri => productIdentifiers.includes(`${getRCPackage(pri)}/${pri.product.id}`));
+    prices = prices.filter(pri => productIdentifiers.includes(`${getRCPackage(pri)}/${pri.product.id}`));
   }
 
   res.setHeader('Content-Type', 'text/html');
   res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
-
   res.render('checkout', {
-    prices: filteredPrices,
-    user: req.session.user,
+    prices,
+    rc_user: req.session.rc_user,
+    subscriptions,
     CURRENCY_SYMBOLS: CURRENCY_SYMBOLS
   });
 })
@@ -137,42 +134,36 @@ app.get('/configure', async (req, res) => {
     limit: 100
   });
 
-  if (req.session.user && req.session.user.anonymous){
-    users.data.unshift(req.session.user)
-  } else {
-    users.data.unshift({ id: `$RCAnonymousID:${uuid()}`, email: 'Anonymous', anonymous: true})
+  if (!req.session.rc_user){
+     req.session.rc_user = generateAnonUser();
   }
 
   res.render('configure', {
-    users: users.data,
-    selected_user: req.session.user.id,
+    stripe_users: users.data,
+    rc_user: req.session.rc_user,
+    use_stripe_user: req.session.use_stripe_user,
+    stripe_user: req.session.stripe_user || {},
     use_offerings: req.session.use_offerings
   });
 })
 
 app.post('/configure', async (req, res) => {
   req.session.use_offerings = req.body.use_offerings === 'on';
+  req.session.rc_user = {
+    id:  req.body.rc_id,
+    email: req.body.rc_email
+  }
 
-  let user;
-
-  if (req.body.user_picker.startsWith('cus_')){
+  req.session.use_stripe_user = req.body.use_stripe_customer === 'on';
+  
+  if (req.body.user_picker && req.body.user_picker.startsWith('cus_')){
     const sUser = await stripe.customers.retrieve(req.body.user_picker);
-    user = {
-      anonymous: false,
+    req.session.stripe_user = {
       id: req.body.user_picker,
       email: sUser.email
     }
-  } else {
-    user = {
-      id:req.body.user_picker,
-      anonymous: !req.body.user_picker.startsWith('cus_'),
-      email: 'Anonymous'
-    }
-  }
+  } 
 
-  req.session.user = user;
-
-  // Store config in session
   res.setHeader('Content-Type', 'text/html');
   res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
   res.redirect(303, '/');
@@ -195,7 +186,7 @@ app.get('/success', async (req, res) => {
   try{
     body = {
       fetch_token: session.subscription,
-      app_user_id: session.customer,
+      app_user_id: req.session.rc_user.id,
       attributes: {
         '$displayName': {
           value: session.customer_details.name
@@ -203,6 +194,10 @@ app.get('/success', async (req, res) => {
         '$email': {
           value: session.customer_details.email
         },
+        'stripe_id': {
+          // Store the customer id as attribute in case we need it
+          value: session.customer
+        }
       }
     };
 
@@ -238,8 +233,8 @@ app.post('/create-checkout-session', async (req, res) => {
     cancel_url: `http://${req.headers.host}/`,
   };
 
-  if (req.session.user && !req.session.user.anonymous){
-    options.customer = req.session.user.id;
+  if (req.session.stripe_user){
+    options.customer = req.session.stripe_user.id;
   }
 
   const session = await stripe.checkout.sessions.create(options);

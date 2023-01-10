@@ -4,13 +4,15 @@
   <%- include('./partials/header'); %>
 </head>
 <body>
-  <section class="white-center">
-    <p>
-      Purchase successful <br>
-      Entitlement "<%= Object.keys(subscriber.entitlements)[0] %>"<br />
-      User ID "<%= subscriber.original_app_user_id %>"
-    </p>
-  </section>
+  <div class="container">
+    <div class="py-3 text-center">
+      <h1 class="display-5 fw-bold">Thanks for Subscribing</h1>
+      <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">Hello <i>"<%= subscriber.original_app_user_id %>"</i>, you have gained "<%= Object.keys(subscriber.entitlements)[0] %>" access</p>
+        <p class="lead mb-4">If you want to go back home <a href="/">click here</a></p>
+      </div>
+    </div>
+  </div>
 </body>
 <%- include('./partials/scripts'); %>
 </html>

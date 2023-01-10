@@ -2,6 +2,13 @@
 <html>
   <head>
     <%- include('./partials/header'); %>
+    <script type="application/javascript">
+      function selectChange(){
+        // if (!event.target.checked){}
+        document.getElementsByName('user_picker')[0].disabled = !event.target.checked;
+        // document.getElementsByName('id')[0].value = dataset.id;
+      }
+    </script>
   </head>
   <body>
     <div class="py-3 text-center">
@@ -14,18 +21,48 @@
       <div class="row justify-content-md-center py-3">
         <div class="col-4 align-self-center">
           <form action="/configure" method="POST" id="form">
+            <hr class="my-4">
+            <h4 class="mb-3">Stripe Checkout User</h4>
             <div class="mb-3">
-              <label for="user_picker" class="form-label">Current User</label>
-              <select class="form-select" name="user_picker">
-                <% users.forEach((user) => { %>
-                  <% if (user.id === selected_user){ %>
-                    <option value="<%= user.id %>" selected><%= user.email %> (<%= user.id %>)</option>
+              <div class="form-check">
+                <% if (use_stripe_user){ %>
+                  <input class="form-check-input" type="checkbox" name="use_stripe_customer" id="use_stripe_customer" checked onChange="selectChange()">
+                <% } else { %>
+                  <input class="form-check-input" type="checkbox" name="use_stripe_customer" id="use_stripe_customer" onChange="selectChange()">
+                <% } %>
+                <label class="form-check-label" for="use_stripe_customer">
+                  Use Existing Stripe Customer
+                </label>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="user_picker" class="form-label">Stripe Customers</label>
+              <% if (use_stripe_user){ %>
+                <select class="form-select" name="user_picker">
+              <% } else { %>
+                <select class="form-select" name="user_picker" disabled>
+              <% } %>
+                <% stripe_users.forEach((user) => { %>
+                  <% if (user.id === stripe_user.id){ %>
+                    <option value="<%= user.id %>" data-id="<%= user.id %>" data-email="<%= user.email %>" selected><%= user.email %> (<%= user.id %>)</option>
                   <% } else { %>
-                    <option value="<%= user.id %>"><%= user.email %> (<%= user.id %>)</option>
+                    <option value="<%= user.id %>" data-id="<%= user.id %>" data-email="<%= user.email %>"><%= user.email %> (<%= user.id %>)</option>
                   <% } %>
                 <% }); %>
               </select>
             </div>
+            <hr class="my-4">
+            <h4 class="mb-3">RevenueCat User</h4>
+            <div class="mb-3">
+              <label for="rc_id" class="form-label">RevenueCat ID</label>
+              <input type="text" name="rc_id" class="form-control" value="<%= rc_user.id %>" ></label>
+            </div>
+            <div class="mb-3">
+              <label for="rc_email" class="form-label">Email Attribute</label>
+              <input type="text" name="rc_email" class="form-control" value="<%= rc_user.email %>"></label>
+            </div>
+            <hr class="my-4">
+            <h4 class="mb-3">Other Settings</h4>
             <div class="mb-3 form-check">
               <% if (use_offerings === true){ %>
                 <input type="checkbox" class="form-check-input" name="use_offerings" checked>
