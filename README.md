@@ -24,3 +24,11 @@
 ## Using offerings
 
 If you want to use offerings, you can enable it in the configure section. What offerings will do is display only those products and prices that are configured as packages. It will use the package duration (based on the identifier) and the product ID to do the filtering
+
+## Deploy to Vercel
+
+1. Create an account in Vercel
+
+2. Fork this repository and connect it to vercel
+
+3. Configure the stripe and revenuecat keys

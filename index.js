@@ -129,7 +129,6 @@ app.get('/', async (req, res) => {
   });
 })
 
-
 app.get('/user', async (req, res) => {
   const response = await instance.get(`/subscribers/${req.session.rc_user.id}`);
   res.render('user', {
@@ -139,11 +138,18 @@ app.get('/user', async (req, res) => {
 
 app.get('/configure', async (req, res) => {
   const users = await stripe.customers.list({
-    limit: 100
+    limit: 100,
+    // test_clock: 'clock_1MP5WbB4vov9kwgjgCJqF5L0'
   });
+
+  console.log(users);
 
   if (!req.session.rc_user){
      req.session.rc_user = generateAnonUser();
+  }
+
+  if (users.data.length === 0){
+    req.session.use_stripe_user = false;
   }
 
   res.render('configure', {
