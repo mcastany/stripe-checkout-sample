@@ -1,10 +1,12 @@
 # stripe-checkout-sample
 
-1. Get an account in Stripe and configure this repository with the stripe key
+1. Get an account in Stripe and copy the stripe key
 
-2. Go to revenuecat and create a Stripe application and paste the public key in this repository
+2. Go to revenuecat and create a Stripe application and copy the public key
 
-3. Run `npm start`
+3. Rename the file `.env.sample` to `.env` and paste both keys
+
+4. Run `npm start`
 
 ## Configure Products in Stripe
 

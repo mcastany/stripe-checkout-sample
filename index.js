@@ -142,8 +142,6 @@ app.get('/configure', async (req, res) => {
     // test_clock: 'clock_1MP5WbB4vov9kwgjgCJqF5L0'
   });
 
-  console.log(users);
-
   if (!req.session.rc_user){
      req.session.rc_user = generateAnonUser();
   }
