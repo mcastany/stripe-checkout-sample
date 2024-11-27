@@ -155,7 +155,8 @@ app.get('/configure', async (req, res) => {
     rc_user: req.session.rc_user,
     use_stripe_user: req.session.use_stripe_user,
     stripe_user: req.session.stripe_user || {},
-    use_offerings: req.session.use_offerings
+    use_offerings: req.session.use_offerings,
+    no_code: req.session.no_code
   });
 })
 
@@ -181,13 +182,17 @@ app.post('/configure', async (req, res) => {
     }
   } 
 
+  if (req.body.no_code){
+    req.session.no_code = true;
+  }
+
   res.setHeader('Content-Type', 'text/html');
   res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
   res.redirect(303, '/');
 })
 
 app.get('/success', async (req, res) => {
-  if (!req.query.session_id){
+  if (!req.query.session_id || req.session.no_code){
     // We should fail, but for now it's ok
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
@@ -252,6 +257,12 @@ app.post('/create-checkout-session', async (req, res) => {
 
   if (req.session.stripe_user){
     options.customer = req.session.stripe_user.id;
+  }
+
+  if (req.session.no_code){
+    options.metadata = {
+      app_user_id: req.session.rc_user.id
+    }
   }
 
   const session = await stripe.checkout.sessions.create(options);
