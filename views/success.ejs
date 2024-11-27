@@ -9,6 +9,10 @@
       <h1 class="display-5 fw-bold">Thanks for Subscribing</h1>
       <div class="col-lg-6 mx-auto">
         <p class="lead mb-4">Hello <a href="/user">"<%= subscriber.original_app_user_id %>"</a>, you have gained "<%= Object.keys(subscriber.entitlements)[0] %>" access</p>
+
+        <% if (subscription_id){ %>
+          <p class="lead mb-4">Subscription ID: <%= subscription_id %></p>
+        <% } %>
         <p class="lead mb-4">If you want to go back home <a href="/">click here</a></p>
       </div>
     </div>

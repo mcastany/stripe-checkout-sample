@@ -192,11 +192,11 @@ app.post('/configure', async (req, res) => {
 })
 
 app.get('/success', async (req, res) => {
-  if (!req.query.session_id || req.session.no_code){
+  if (!req.query.session_id){
     // We should fail, but for now it's ok
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
-    res.render('success'); 
+    res.render('success', { subscriber: { original_app_user_id: req.session.rc_user.id, entitlements: { fake: true} } }); 
     return;
   }
 
@@ -204,6 +204,13 @@ app.get('/success', async (req, res) => {
     expand: ['invoice.subscription'],
   });
   let response, body;
+
+  if (req.session.no_code) {
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
+    res.render('success', { subscriber: { original_app_user_id: req.session.rc_user.id, entitlements: { fake: true} }, subscription_id: session.subscription }); 
+    return;
+  }
 
   try{
     body = {
@@ -230,7 +237,7 @@ app.get('/success', async (req, res) => {
     return;
   }
 
-  res.render('success', { subscriber: response.data.subscriber });
+  res.render('success', { subscriber: response.data.subscriber, subscription_id: session.subscription });
 })
 
 app.get('/cancel', async (req, res) => {
