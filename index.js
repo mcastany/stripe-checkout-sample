@@ -208,7 +208,7 @@ app.get('/success', async (req, res) => {
   if (req.session.no_code) {
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
-    res.render('success', { subscriber: { original_app_user_id: req.session.rc_user.id, entitlements: { fake: true} }, subscription_id: session.subscription }); 
+    res.render('success', { subscriber: { original_app_user_id: req.session.rc_user.id, entitlements: { fake: true} }, subscription_id: session.subscription, checkout_session_id: req.query.session_id }); 
     return;
   }
 
@@ -237,7 +237,7 @@ app.get('/success', async (req, res) => {
     return;
   }
 
-  res.render('success', { subscriber: response.data.subscriber, subscription_id: session.subscription });
+  res.render('success', { subscriber: response.data.subscriber, subscription_id: session.subscription, checkout_session_id: req.query.session_id });
 })
 
 app.get('/cancel', async (req, res) => {
