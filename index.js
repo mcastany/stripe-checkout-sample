@@ -252,7 +252,7 @@ app.post('/create-checkout-session', async (req, res) => {
     return;
   }
 
-  const options = {
+  let options = {
     line_items: [{
       price: req.body.price_id,
       quantity: 1,
@@ -260,6 +260,9 @@ app.post('/create-checkout-session', async (req, res) => {
     mode: 'subscription',
     success_url: `http://${req.headers.host}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `http://${req.headers.host}/`,
+    metadata: {
+      'origin': 'web'
+    }
   };
 
   if (req.session.stripe_user){
@@ -267,9 +270,7 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 
   if (req.session.no_code){
-    options.metadata = {
-      app_user_id: req.session.rc_user.id
-    }
+    options.metadata.app_user_id = req.session.rc_user.id;
   }
 
   const session = await stripe.checkout.sessions.create(options);
