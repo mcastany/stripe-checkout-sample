@@ -96,6 +96,7 @@ app.get('/', async (req, res) => {
     req.session.rc_user = generateAnonUser();
   }
 
+
   const response = await instance.get(`/subscribers/${req.session.rc_user.id}`);
   const subscriptions = Object.keys(response.data.subscriber.subscriptions);
   let { data: prices} = await stripe.prices.list({
@@ -208,13 +209,13 @@ app.get('/success', async (req, res) => {
   if (req.session.no_code) {
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
-    res.render('success', { subscriber: { original_app_user_id: req.session.rc_user.id, entitlements: { } }, subscription_id: session.subscription, checkout_session_id: req.query.session_id }); 
+    res.render('success', { subscriber: { original_app_user_id: req.session.rc_user.id, entitlements: { } }, subscription_id: session.subscription.id, checkout_session_id: req.query.session_id }); 
     return;
   }
 
   try{
     body = {
-      fetch_token: session.subscription,
+      fetch_token: session.subscription.id,
       app_user_id: req.session.rc_user.id,
       attributes: {
         '$displayName': {
