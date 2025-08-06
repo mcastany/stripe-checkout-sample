@@ -238,7 +238,7 @@ app.get('/success', async (req, res) => {
     return;
   }
 
-  res.render('success', { subscriber: response.data.subscriber, subscription_id: session.subscription, checkout_session_id: req.query.session_id });
+  res.render('success', { subscriber: response.data.subscriber, subscription_id: session.subscription.id, checkout_session_id: req.query.session_id });
 })
 
 app.get('/cancel', async (req, res) => {
