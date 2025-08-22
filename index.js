@@ -210,7 +210,7 @@ app.get('/success', async (req, res) => {
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
 
-    if (session.mode === 'payment'){
+    if (!session.subscription){
       res.render('success', { subscriber: { original_app_user_id: req.session.rc_user.id, entitlements: { } }, subscription_id: null, checkout_session_id: req.query.session_id }); 
       return;
     }
@@ -244,7 +244,7 @@ app.get('/success', async (req, res) => {
     return;
   }
 
-  res.render('success', { subscriber: response.data.subscriber, subscription_id: session.subscription.id, checkout_session_id: req.query.session_id });
+  res.render('success', { subscriber: response.data.subscriber, subscription_id: session.subscription ? session.subscription.id : null, checkout_session_id: req.query.session_id });
 })
 
 app.get('/cancel', async (req, res) => {
