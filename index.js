@@ -209,13 +209,19 @@ app.get('/success', async (req, res) => {
   if (req.session.no_code) {
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 's-max-age=1, stale-while-revalidate');
+
+    if (session.mode === 'payment'){
+      res.render('success', { subscriber: { original_app_user_id: req.session.rc_user.id, entitlements: { } }, subscription_id: null, checkout_session_id: req.query.session_id }); 
+      return;
+    }
+
     res.render('success', { subscriber: { original_app_user_id: req.session.rc_user.id, entitlements: { } }, subscription_id: session.subscription.id, checkout_session_id: req.query.session_id }); 
     return;
   }
 
   try{
     body = {
-      fetch_token: session.subscription.id,
+      fetch_token: session.id,
       app_user_id: req.session.rc_user.id,
       attributes: {
         '$displayName': {
