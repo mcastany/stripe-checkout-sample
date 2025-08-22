@@ -34,6 +34,7 @@
                   <form action="/create-checkout-session" method="POST">
                     <!-- /<%= price.id %> -->
                     <input type="hidden" value="<%= price.id %>" name="price_id"/>
+                    <input type="hidden" value="<%= price.recurring ? 'recurring' : 'one_time' %>" name="product_type"/>
                     <% if (subscriptions.indexOf(price.product.id) === -1){ %>
                       <button class="btn btn-primary" type="submit" id="checkout-button">Buy</button>
                     <% } else { %>

@@ -258,7 +258,7 @@ app.post('/create-checkout-session', async (req, res) => {
       price: req.body.price_id,
       quantity: 1,
     }, ],
-    mode: 'subscription',
+    mode: req.body.product_type !== 'one_time' ? 'subscription' : 'payment',
     success_url: `http://${req.headers.host}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `http://${req.headers.host}/`,
     metadata: {
