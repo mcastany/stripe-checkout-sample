@@ -19,6 +19,9 @@ app.use('/static', express.static('static'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Make Google Analytics ID available to all templates
+app.locals.GA_MEASUREMENT_ID = process.env.GA_MEASUREMENT_ID;
+
 app.use(cookieSession({
   name: 'session',
   keys: [ 'revenuecat' ],
