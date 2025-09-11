@@ -8,12 +8,12 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.27.2",
+    "axios": "^1.11.0",
     "body-parser": "^1.20.1",
     "cookie-session": "^2.0.0",
     "dotenv": "^16.0.2",
@@ -23,6 +23,6 @@
     "uuidv4": "^6.2.13"
   },
   "devDependencies": {
-    "nodemon": "^2.0.19"
+    "nodemon": "^3.1.10"
   }
 }
